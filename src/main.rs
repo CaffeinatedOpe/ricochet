@@ -19,7 +19,7 @@ struct Behaviors {
 }
 impl Default for Behaviors {
 	fn default() -> Self {
-		Behaviors { default_page: String::new() }
+		Behaviors { default_page: "https://github.com/CaffeinatedOpe/ricochet".to_string() }
 	}
 }
 
@@ -52,7 +52,7 @@ async fn main() -> std::io::Result<()> {
 	let config_str = std::fs::read_to_string("config.toml").expect("invalid config");
 	let config: Config = toml::from_str(&config_str).expect("invalid config");
 
-	HttpServer::new(|| { App::new().service(handler) })
+	HttpServer::new(|| { App::new().service(handler).service(web::redirect("/", CONFIG.behaviors.default_page.as_str())) })
 		.bind(("127.0.0.1", 8081))?
 		.run().await
 }

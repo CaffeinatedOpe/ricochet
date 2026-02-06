@@ -1,8 +1,6 @@
 [paths]
-blog = 'https://caffeinatedope.net/blog'
-qr = 'https://caffeinatedope.net'
-google = 'https://google.com'
-github = 'https://github.com/caffeinatedope'
+creator = 'https://caffeinatedope.net/blog'
+github = 'https://github.com/CaffeinatedOpe/ricochet'
 
 [behaviors]
-default_page = "https://caffeinatedope.net/projects/ricochet"
+default_page = "https://github.com/CaffeinatedOpe/ricochet"
