@@ -2,6 +2,7 @@
 * ~~redirect incoming traffic to external site based on path using data in a hashmap~~
 * ~~pull data from config file~~
 * build and deploy with CI/CD loop
+* core configs through env. variables or cli args
 * pull data from ConfigMap
 * Readme/documentation
 * example deployments
