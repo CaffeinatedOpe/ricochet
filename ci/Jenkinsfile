@@ -12,7 +12,7 @@ pipeline {
       steps {
         container('buildkit') {
 					checkout scmGit(userRemoteConfigs: [
-                    [ url: 'https://github.com/caffeinatedope/blog' ]
+                    [ url: 'https://github.com/caffeinatedope/ricochet' ]
                 ])
         }
       }
