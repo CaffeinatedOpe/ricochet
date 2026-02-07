@@ -1,0 +1,35 @@
+pipeline {
+  agent {
+   	kubernetes {
+      yamlFile 'ci/pod.yaml'
+  	}
+  }
+	triggers {
+		pollSCM('H/5 * * * *')
+	}
+  stages {
+    stage('clone') {
+      steps {
+        container('buildkit') {
+					checkout scmGit(userRemoteConfigs: [
+                    [ url: 'https://github.com/caffeinatedope/blog' ]
+                ])
+        }
+      }
+    }
+		stage('build') {
+			steps {
+				container('rust') {
+					sh 'cargo build --target x86_64-unknown-linux-musl'
+				}
+			}
+		}
+    stage('package and push') {
+      steps {
+        container('buildkit') {
+	        sh 'buildctl-daemonless.sh build . --output type=image,name=ghcr.io/caffeinatedope/ricochet-dev,push=true,tag=$(date +%s) --frontend dockerfile.v0 --local context=. --local dockerfile=ci/.'
+        }
+      }
+    }
+  }
+}

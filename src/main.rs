@@ -6,6 +6,8 @@ use serde::{ Deserialize };
 use std::fs;
 use std::io::{ self, Write };
 
+static config_path: &str = "/config/config.toml";
+
 #[derive(Deserialize, Debug)]
 struct Config {
 	paths: Table,
@@ -25,12 +27,12 @@ impl Default for Behaviors {
 
 lazy_static! {
 	static ref CONFIG: Config = {
-		let config_str = std::fs::read_to_string("config.toml").expect("invalid config");
+		let config_str = std::fs::read_to_string(config_path.to_string()).expect("invalid config");
 		let config: Config = toml::from_str(&config_str).expect("invalid config");
 		config
 	};
 	static ref PATHS: Table = {
-		let config_str = std::fs::read_to_string("config.toml").expect("invalid config");
+		let config_str = std::fs::read_to_string(config_path.to_string()).expect("invalid config");
 		let config: Config = toml::from_str(&config_str).expect("invalid config");
 		config.paths
 	};
@@ -49,10 +51,10 @@ async fn handler(path: web::Path<String>) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-	let config_str = std::fs::read_to_string("config.toml").expect("invalid config");
+	let config_str = std::fs::read_to_string(config_path.to_string()).expect("invalid config");
 	let config: Config = toml::from_str(&config_str).expect("invalid config");
 
 	HttpServer::new(|| { App::new().service(handler).service(web::redirect("/", CONFIG.behaviors.default_page.as_str())) })
-		.bind(("127.0.0.1", 8081))?
+		.bind(("0.0.0.0", 8081))?
 		.run().await
 }
