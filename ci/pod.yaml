@@ -4,7 +4,7 @@ metadata:
   name: buildkit
 spec:
   containers:
-    - name: node
+    - name: rust
       image: rust:alpine
       command:
       - cat
