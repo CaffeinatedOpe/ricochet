@@ -54,12 +54,21 @@ async fn main() -> std::io::Result<()> {
 
 	for entry in args.clone() {
 		if current_arg_action == ArgAction::NONE {
-			if entry == "-c".to_string() {
-				current_arg_action = ArgAction::CONFIG_PATH;
+			match entry.as_str() {
+				"-c" => {
+					current_arg_action = ArgAction::CONFIG_PATH;
+				}
+				"-C" => {
+					configMap_enable = true;
+				}
+				&_ => (),
 			}
 		} else {
-			if current_arg_action == ArgAction::CONFIG_PATH {
-				config_path = entry;
+			match current_arg_action {
+				ArgAction::CONFIG_PATH => {
+					config_path = entry;
+				}
+				ArgAction::NONE => (),
 			}
 		}
 	}
@@ -68,7 +77,7 @@ async fn main() -> std::io::Result<()> {
 	let config: Config = toml::from_str(&config_str).expect("invalid config");
 
 	let data = Data::new(Mutex::new(config.clone()));
-	
+
 	println!("Running");
 
 	HttpServer::new(move || {
