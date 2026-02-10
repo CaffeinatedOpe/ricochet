@@ -1,13 +1,10 @@
 use std::sync::Mutex;
-use actix_web::{ get, App, HttpServer, Result, web::Redirect, Responder, web::{self, Data}};
-use lazy_static::lazy_static;
-use toml::{ Table, Value };
-use std::{ collections::HashMap, path };
+use actix_web::{ get, App, HttpServer, web::Redirect, Responder, web::{ self, Data } };
+use toml::{ Table };
 use serde::{ Deserialize };
 use std::fs;
 use std::io::{ self, Write };
-
-static CONFIG_PATH: &str = "/config/config.toml";
+use std::env;
 
 #[derive(Deserialize, Debug, Clone)]
 struct Config {
@@ -37,17 +34,48 @@ async fn handler(path: web::Path<String>, data: Data<Mutex<Config>>) -> impl Res
 	Redirect::to(output_path).permanent()
 }
 
+#[derive(PartialEq)]
+enum ArgAction {
+	NONE,
+	CONFIG_PATH,
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-	let config_str = std::fs::read_to_string(CONFIG_PATH.to_string()).expect("invalid config");
+	println!("Initializing...");
+	let mut config_path: String = "/config/config.toml".to_string();
+	let mut configMap_enable: bool = false;
+
+	configMap_enable = env::var("CONFIGMAP").is_ok();
+	config_path = env::var("CONFIG_PATH").unwrap_or(config_path);
+
+	let args: Vec<String> = env::args().collect();
+	let mut current_arg_action: ArgAction = ArgAction::NONE;
+
+	for entry in args.clone() {
+		if current_arg_action == ArgAction::NONE {
+			if entry == "-c".to_string() {
+				current_arg_action = ArgAction::CONFIG_PATH;
+			}
+		} else {
+			if current_arg_action == ArgAction::CONFIG_PATH {
+				config_path = entry;
+			}
+		}
+	}
+
+	let config_str = std::fs::read_to_string(config_path).expect("invalid config location");
 	let config: Config = toml::from_str(&config_str).expect("invalid config");
 
 	let data = Data::new(Mutex::new(config.clone()));
+	
+	println!("Running");
 
-	HttpServer::new(move || { App::new()
-		.app_data(Data::clone(&data))
-		.service(handler)
-		.service(web::redirect("/", config.behaviors.default_page.clone()))
+	HttpServer::new(move || {
+		App::new()
+			.app_data(Data::clone(&data))
+			.service(handler)
+			.service(web::redirect("/", config.behaviors.default_page.clone()))
 	})
 		.bind(("0.0.0.0", 8081))?
 		.run().await
