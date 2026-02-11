@@ -1,10 +1,9 @@
-use std::{ default, sync::Mutex };
+use std::{ sync::Mutex };
 use actix_web::{ get, App, HttpServer, web::Redirect, Responder, web::{ self, Data } };
-use futures_util::stream::Take;
 use toml::{ Table, Value };
 use serde::{ Deserialize };
 use std::fs;
-use std::io::{ self, Write };
+use std::io::{ self };
 use std::env;
 
 #[derive(Deserialize, Debug, Clone)]
@@ -27,7 +26,7 @@ impl Default for Behaviors {
 #[get("/{key}")]
 async fn handler(path: web::Path<String>, data: Data<Mutex<Config>>) -> impl Responder {
 	let key = path.into_inner();
-	let mut passed_config = data.lock().unwrap();
+	let passed_config = data.lock().unwrap();
 	let mut output_path = passed_config.behaviors.default_page.clone();
 	if passed_config.paths.contains_key(&key) {
 		output_path = passed_config.paths[&key].as_str().unwrap().to_string();
@@ -50,7 +49,7 @@ async fn main() -> std::io::Result<()> {
 	let config_str: String;
 	let config: Config;
 
-	let mut configMap_enable = env::var("CONFIGMAP").is_ok();
+	let mut config_map_enable = env::var("CONFIGMAP").is_ok();
 	let mut config_path = env::var("CONFIG_PATH").unwrap_or("/config/config.toml".to_string());
 	let mut custom_default = env::var("CUSTOM_DEFAULT").unwrap_or("".to_string());
 
@@ -64,7 +63,7 @@ async fn main() -> std::io::Result<()> {
 					current_arg_action = ArgAction::ConfigPath;
 				}
 				"-C" => {
-					configMap_enable = true;
+					config_map_enable = true;
 				}
 				"-d" => {
 					current_arg_action = ArgAction::SetCustomDefault;
@@ -84,7 +83,7 @@ async fn main() -> std::io::Result<()> {
 		}
 	}
 
-	if configMap_enable {
+	if config_map_enable {
 		let mut paths = Table::new();
 		let entries = fs
 			::read_dir("/config")?
