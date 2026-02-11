@@ -11,7 +11,7 @@ My main use case was going to be (semi)permanent qr codes or nfc tags, and I wan
 - serde for toml parsing (if needed)
 - standard libs for env, filesystem parsing, etc.
 ## Usage:
-Either install the docker container or clone the repo and build it. Run your compiled program directly via
+Either install the docker container or clone the repo and build it. Run your compiled program directly via  
 ```ricochet -c config.toml```  
 (make sure your toml config exists, see either the default toml file or the wiki for config info).  
 
