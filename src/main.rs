@@ -1,6 +1,7 @@
-use std::{default, sync::Mutex};
+use std::{ default, sync::Mutex };
 use actix_web::{ get, App, HttpServer, web::Redirect, Responder, web::{ self, Data } };
-use toml::{ Table };
+use futures_util::stream::Take;
+use toml::{ Table, Value };
 use serde::{ Deserialize };
 use std::fs;
 use std::io::{ self, Write };
@@ -31,6 +32,7 @@ async fn handler(path: web::Path<String>, data: Data<Mutex<Config>>) -> impl Res
 	if passed_config.paths.contains_key(&key) {
 		output_path = passed_config.paths[&key].as_str().unwrap().to_string();
 	}
+	println!("Redirecting to: {output_path}");
 	Redirect::to(output_path).permanent()
 }
 
@@ -38,12 +40,15 @@ async fn handler(path: web::Path<String>, data: Data<Mutex<Config>>) -> impl Res
 enum ArgAction {
 	NONE,
 	ConfigPath,
-	SetCustomDefault
+	SetCustomDefault,
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 	println!("Initializing...");
+
+	let config_str: String;
+	let config: Config;
 
 	let mut configMap_enable = env::var("CONFIGMAP").is_ok();
 	let mut config_path = env::var("CONFIG_PATH").unwrap_or("/config/config.toml".to_string());
@@ -79,8 +84,26 @@ async fn main() -> std::io::Result<()> {
 		}
 	}
 
-	let config_str = std::fs::read_to_string(config_path).expect("invalid config location");
-	let config: Config = toml::from_str(&config_str).expect("invalid config");
+	if configMap_enable {
+		let mut paths = Table::new();
+		let entries = fs
+			::read_dir("/config")?
+			.map(|res| res.map(|e| e.path()))
+			.collect::<Result<Vec<_>, io::Error>>()?;
+		println!("configs found: {:?}", entries);
+		for x in entries {
+			let key = x.file_name().unwrap().to_str().unwrap().to_string();
+			let val: Value = Value::String(std::fs::read_to_string(&x).expect("error reading file {x}"));
+			paths.insert(key, val);
+		}
+		config = Config {
+			paths,
+			behaviors: Behaviors { default_page: "".to_string() },
+		};
+	} else {
+		config_str = std::fs::read_to_string(config_path).expect("invalid config location");
+		config = toml::from_str(&config_str).expect("invalid config");
+	}
 
 	let data = Data::new(Mutex::new(config.clone()));
 
