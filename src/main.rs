@@ -106,7 +106,7 @@ async fn main() -> std::io::Result<()> {
 
 	let data = Data::new(Mutex::new(config.clone()));
 
-	if custom_default != "".to_string() {
+	if custom_default == "".to_string() {
 		custom_default = config.behaviors.default_page;
 	}
 
