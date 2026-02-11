@@ -1,9 +1,6 @@
 { pkgs ? import <nixpkgs> {} }:
   let
     overrides = (builtins.fromTOML (builtins.readFile ./rust-toolchain.toml));
-    libPath = with pkgs; lib.makeLibraryPath [
-      # load external libraries that you need in your rust project here
-    ];
 in
   pkgs.mkShell rec {
     nativeBuildInputs = [ pkgs.pkg-config ];
@@ -12,6 +9,7 @@ in
       # Replace llvmPackages with llvmPackages_X, where X is the latest LLVM version (at the time of writing, 16)
       llvmPackages.bintools
       rustup
+      rust-analyzer
     ];
 
     RUSTC_VERSION = overrides.toolchain.channel;
@@ -22,14 +20,13 @@ in
     shellHook = ''
       export PATH=$PATH:''${CARGO_HOME:-~/.cargo}/bin
       export PATH=$PATH:''${RUSTUP_HOME:-~/.rustup}/toolchains/$RUSTC_VERSION-x86_64-unknown-linux-gnu/bin/
+			unset TEMP TMP TEMPDIR TMPDIR
       '';
 
     # Add precompiled library to rustc search path
     RUSTFLAGS = (builtins.map (a: ''-L ${a}/lib'') [
       # add libraries here (e.g. pkgs.libvmi)
     ]);
-
-    LD_LIBRARY_PATH = libPath;
 
     # Add glibc, clang, glib, and other headers to bindgen search path
     BINDGEN_EXTRA_CLANG_ARGS =

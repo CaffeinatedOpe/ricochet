@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use std::{default, sync::Mutex};
 use actix_web::{ get, App, HttpServer, web::Redirect, Responder, web::{ self, Data } };
 use toml::{ Table };
 use serde::{ Deserialize };
@@ -37,7 +37,8 @@ async fn handler(path: web::Path<String>, data: Data<Mutex<Config>>) -> impl Res
 #[derive(PartialEq)]
 enum ArgAction {
 	NONE,
-	CONFIG_PATH,
+	ConfigPath,
+	SetCustomDefault
 }
 
 #[actix_web::main]
@@ -45,6 +46,7 @@ async fn main() -> std::io::Result<()> {
 	println!("Initializing...");
 	let mut config_path: String = "/config/config.toml".to_string();
 	let mut configMap_enable: bool = false;
+	let mut custom_default = "".to_string();
 
 	configMap_enable = env::var("CONFIGMAP").is_ok();
 	config_path = env::var("CONFIG_PATH").unwrap_or(config_path);
@@ -56,17 +58,23 @@ async fn main() -> std::io::Result<()> {
 		if current_arg_action == ArgAction::NONE {
 			match entry.as_str() {
 				"-c" => {
-					current_arg_action = ArgAction::CONFIG_PATH;
+					current_arg_action = ArgAction::ConfigPath;
 				}
 				"-C" => {
 					configMap_enable = true;
+				}
+				"-d" => {
+					current_arg_action = ArgAction::SetCustomDefault;
 				}
 				&_ => (),
 			}
 		} else {
 			match current_arg_action {
-				ArgAction::CONFIG_PATH => {
+				ArgAction::ConfigPath => {
 					config_path = entry;
+				}
+				ArgAction::SetCustomDefault => {
+					custom_default = entry;
 				}
 				ArgAction::NONE => (),
 			}
@@ -78,13 +86,17 @@ async fn main() -> std::io::Result<()> {
 
 	let data = Data::new(Mutex::new(config.clone()));
 
+	if custom_default != "".to_string() {
+		custom_default = config.behaviors.default_page;
+	}
+
 	println!("Running");
 
 	HttpServer::new(move || {
 		App::new()
 			.app_data(Data::clone(&data))
 			.service(handler)
-			.service(web::redirect("/", config.behaviors.default_page.clone()))
+			.service(web::redirect("/", custom_default.clone()))
 	})
 		.bind(("0.0.0.0", 8081))?
 		.run().await

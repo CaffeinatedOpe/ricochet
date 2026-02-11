@@ -1,5 +1,6 @@
 {
 	"telemetry.editStats.enabled": false,
 	"telemetry.feedback.enabled": false,
-	"nixEnvSelector.suggestion": false
+	"nixEnvSelector.suggestion": false,
+	"nixEnvSelector.nixFile": "${workspaceFolder}/shell.nix"
 }
