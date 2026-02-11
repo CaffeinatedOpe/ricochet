@@ -44,12 +44,10 @@ enum ArgAction {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 	println!("Initializing...");
-	let mut config_path: String = "/config/config.toml".to_string();
-	let mut configMap_enable: bool = false;
-	let mut custom_default = "".to_string();
 
-	configMap_enable = env::var("CONFIGMAP").is_ok();
-	config_path = env::var("CONFIG_PATH").unwrap_or(config_path);
+	let mut configMap_enable = env::var("CONFIGMAP").is_ok();
+	let mut config_path = env::var("CONFIG_PATH").unwrap_or("/config/config.toml".to_string());
+	let mut custom_default = env::var("CUSTOM_DEFAULT").unwrap_or("".to_string());
 
 	let args: Vec<String> = env::args().collect();
 	let mut current_arg_action: ArgAction = ArgAction::NONE;
