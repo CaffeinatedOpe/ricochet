@@ -1,0 +1,9 @@
+services:
+  server:
+    image: ghcr.io/caffeinatedope/ricochet-dev:latest
+    container_name: gitea
+    restart: always
+    volumes:
+      - /path/to/config.toml:/config/config.toml
+    ports:
+      - "8081:8081"

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ricochet-deployment
+  namespace: ricochet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ricochet
+  template:
+    metadata:
+      labels:
+        app: ricochet
+    spec:
+      containers:
+      - name: ricochet
+        image: ghcr.io/caffeinatedope/ricochet-dev:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+        env:
+        - name: CONFIGMAP
+          value: "1"
+        - name: CUSTOM_DEFAULT
+          value: "https://caffeinatedope.net"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: ricochet-configmap
