@@ -47,7 +47,7 @@ async fn main() -> std::io::Result<()> {
 	println!("Initializing...");
 
 	let config_str: String;
-	let config: Config;
+	let mut config: Config;
 
 	let mut config_map_enable = env::var("CONFIGMAP").is_ok();
 	let mut config_path = env::var("CONFIG_PATH").unwrap_or("/config/config.toml".to_string());
@@ -74,9 +74,12 @@ async fn main() -> std::io::Result<()> {
 			match current_arg_action {
 				ArgAction::ConfigPath => {
 					config_path = entry;
+					current_arg_action = ArgAction::NONE;
 				}
 				ArgAction::SetCustomDefault => {
 					custom_default = entry;
+					print!("custom default set to {custom_default}");
+					current_arg_action = ArgAction::NONE;
 				}
 				ArgAction::NONE => (),
 			}
@@ -104,12 +107,15 @@ async fn main() -> std::io::Result<()> {
 		config = toml::from_str(&config_str).expect("invalid config");
 	}
 
-	let data = Data::new(Mutex::new(config.clone()));
-
+	
 	if custom_default == "".to_string() {
-		custom_default = config.behaviors.default_page;
+		custom_default = config.behaviors.default_page.clone();
+		println!("custom default set to {custom_default}");
+	} else {
+		config.behaviors.default_page = custom_default.clone();
 	}
-
+	
+	let data = Data::new(Mutex::new(config.clone()));
 	println!("Running");
 
 	HttpServer::new(move || {
