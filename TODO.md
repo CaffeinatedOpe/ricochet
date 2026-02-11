@@ -4,10 +4,10 @@
 * ~~build and deploy with CI/CD loop~~
 * ~~core configs through env. variables or cli args~~
 * ~~pull data from ConfigMap~~
-* Readme/documentation
-* example deployments
+* ~~Readme/documentation~~
+* ~~example deployments~~
 
-# stretch goals:
+# extra goals:
 * integrate tests
 * check if hashmaps are more optimized than searching a pair of vectors. doubt it, but possible optimization opportunity
 * ~~find better way to pass through/find mapping?~~

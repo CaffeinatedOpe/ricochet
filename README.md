@@ -11,7 +11,7 @@ My main use case was going to be (semi)permanent qr codes or nfc tags, and I wan
 - serde for toml parsing (if needed)
 - standard libs for env, filesystem parsing, etc.
 ## Usage:
-Either install the docker container or clone the repo. Run your program with rust via   
+Either install the docker container or clone the repo and build it. Run your compiled program directly via
 ```ricochet -c config.toml```  
 (make sure your toml config exists, see either the default toml file or the wiki for config info).  
 
@@ -19,3 +19,7 @@ Run your program cooler and better with Docker:
 ```docker run -v config.toml:/config/config.toml ghcr.io/caffeinatedope/ricochet-dev```
 
 Kubernetes works great, see the documentation for configuration info, and the examples for example usage.
+## Building:
+To build, simply clone the repo, open it in a terminal, and run `cargo build`.
+
+To build the docker container, you'll need to run `cargo build --target x86_64-unknown-linux-musl` first, then `docker build . --file ci/Dockerfile`.
