@@ -78,7 +78,6 @@ async fn main() -> std::io::Result<()> {
 				}
 				ArgAction::SetCustomDefault => {
 					custom_default = entry;
-					print!("custom default set to {custom_default}");
 					current_arg_action = ArgAction::NONE;
 				}
 				ArgAction::NONE => (),
@@ -110,7 +109,6 @@ async fn main() -> std::io::Result<()> {
 	
 	if custom_default == "".to_string() {
 		custom_default = config.behaviors.default_page.clone();
-		println!("custom default set to {custom_default}");
 	} else {
 		config.behaviors.default_page = custom_default.clone();
 	}
