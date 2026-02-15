@@ -88,14 +88,19 @@ async fn main() -> std::io::Result<()> {
 	if config_map_enable {
 		let mut paths = Table::new();
 		let entries = fs
-			::read_dir("/config")?
+			::read_dir("/config/")?
 			.map(|res| res.map(|e| e.path()))
 			.collect::<Result<Vec<_>, io::Error>>()?;
 		println!("configs found: {:?}", entries);
 		for x in entries {
 			let key = x.file_name().unwrap().to_str().unwrap().to_string();
-			let val: Value = Value::String(std::fs::read_to_string(&x).expect("error reading file {x}"));
-			paths.insert(key, val);
+			let contents = std::fs::read_to_string(&x).unwrap_or("".to_string());
+			if contents != "".to_string() {
+				let val: Value = Value::String(contents.to_string());
+				paths.insert(key, val);
+			}	else{
+				println!("file {key} empty, skipping");
+			}
 		}
 		config = Config {
 			paths,
