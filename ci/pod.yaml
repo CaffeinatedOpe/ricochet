@@ -20,7 +20,7 @@ spec:
   volumes:
     - name: registry-creds
       secret:
-        secretName: registry-creds
+        secretName: codeberg-regcred
         defaultMode: 0400
         items:
           - key: .dockerconfigjson
