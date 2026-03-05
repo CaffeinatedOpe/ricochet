@@ -12,7 +12,7 @@ pipeline {
       steps {
         container('buildkit') {
 					checkout scmGit(userRemoteConfigs: [
-                    [ url: 'https://github.com/caffeinatedope/ricochet' ]
+                    [ url: 'https://codeberg.org/caffeinatedope/ricochet' ]
                 ])
         }
       }
@@ -27,7 +27,7 @@ pipeline {
     stage('package and push') {
       steps {
         container('buildkit') {
-	        sh 'buildctl-daemonless.sh build . --output type=image,name=ghcr.io/caffeinatedope/ricochet-dev,push=true,tag=$(date +%s) --frontend dockerfile.v0 --local context=. --local dockerfile=ci/.'
+	        sh 'buildctl-daemonless.sh build . --output type=image,name=codeberg.org/caffeinatedope/ricochet-dev,push=true,tag=$(date +%s) --frontend dockerfile.v0 --local context=. --local dockerfile=ci/.'
         }
       }
     }
